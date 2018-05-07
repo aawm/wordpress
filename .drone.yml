@@ -38,10 +38,8 @@ pipeline:
     detach: true
     environment:
       - DOCKER_HOST=tcp://docker:2375
-      - WORDPRESS_DB_USERNAME=wordpress
-      - WORDPRESS_DB_PASSWORD=wordpress
     commands:
-      - docker run -e WORDPRESS_DB_USERNAME -e WORDPRESS_DB_PASSWORD -p 8000:80 owncloud/wordpress:latest
+      - docker run -e WORDPRESS_DB_WAITING=false -p 8000:80 owncloud/wordpress:latest
 
   test:
     image: owncloud/ubuntu:latest
@@ -89,14 +87,6 @@ pipeline:
 services:
   docker:
     image: docker:18.04-dind
-
-  mariadb:
-    image: webhippie/mariadb:latest
-    environment:
-      - MARIADB_ROOT_PASSWORD=wordpress
-      - MARIADB_USERNAME=wordpress
-      - MARIADB_PASSWORD=wordpress
-      - MARIADB_DATABASE=wordpress
 
 matrix:
   include:

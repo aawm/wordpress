@@ -21,4 +21,7 @@ declare -x WORDPRESS_DB_TIMEOUT
 declare -x WORDPRESS_DB_FAIL
 [[ -z "${WORDPRESS_DB_FAIL}" ]] && WORDPRESS_DB_FAIL="true"
 
+declare -x WORDPRESS_DB_WAITING
+[[ -z "${WORDPRESS_DB_WAITING}" ]] && WORDPRESS_DB_WAITING="true"
+
 true
