@@ -54,6 +54,7 @@ pipeline:
     environment:
       - DOCKER_HOST=tcp://docker:2375
     commands:
+      - sleep 5
       - |
         docker run --name wordpress \
           --link mariadb:mariadb \
@@ -63,9 +64,13 @@ pipeline:
           owncloud/wordpress:latest
 
   test:
-    image: owncloud/ubuntu:latest
+    image: toolhippie/docker:latest
     pull: true
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
     commands:
+      - docker images
+      - docker ps -a
       - wait-for-it -t 600 docker:8000
       - curl -sSf http://docker:8000/
 
