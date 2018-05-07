@@ -1,1 +1,1 @@
-*/15  *  *  *  * www-data php -f /var/www/wordpress/cron.php
+*/15  *  *  *  * www-data /usr/bin/php -f /var/www/wordpress/cron.php

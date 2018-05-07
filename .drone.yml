@@ -1,0 +1,106 @@
+workspace:
+  base: /drone
+  path: src/github.com/owncloud-docker/wordpress
+
+branches:
+  - master
+
+clone:
+  git:
+    image: plugins/git:1
+    pull: true
+
+pipeline:
+  tarball:
+    image: plugins/download:latest
+    pull: true
+    secrets: [ download_username, download_password ]
+    source: https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz
+    sha256: ${WORDPRESS_CHECKSUM}
+
+  wait:
+    image: owncloud/ubuntu:latest
+    pull: true
+    commands:
+      - wait-for-it -t 600 docker:2375
+
+  build:
+    image: toolhippie/docker:latest
+    pull: true
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - docker build -t owncloud/wordpress:latest .
+
+  server:
+    image: toolhippie/docker:latest
+    pull: true
+    detach: true
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - docker run -p 8000:80 owncloud/wordpress:latest
+
+  test:
+    image: owncloud/ubuntu:latest
+    pull: true
+    commands:
+      - wait-for-it -t 600 docker:8000
+      - curl -sSf http://docker:8000/
+
+  publish:
+    image: toolhippie/docker:latest
+    pull: true
+    secrets: [ docker_username, docker_password ]
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - |
+        for IMAGE in ${IMAGE_TAGS}; do
+          docker tag owncloud/wordpress:latest owncloud/wordpress:$IMAGE
+          docker push owncloud/wordpress:$IMAGE
+        done
+    when:
+      event: [ push ]
+
+  microbadger:
+    image: plugins/webhook:1
+    pull: true
+    secrets: [ webhook_urls ]
+    when:
+      local: false
+      event: [ push ]
+
+  slack:
+    image: plugins/slack:1
+    pull: true
+    secrets: [ slack_webhook ]
+    channel: docker
+    template: >
+      *{{build.status}}* <{{build.link}}|{{repo.owner}}/{{repo.name}}#{{truncate build.commit 8}}> @ ${WORDPRESS_VERSION}
+    when:
+      local: false
+      event: [ push ]
+      status: [ changed, failure ]
+
+services:
+  docker:
+    image: docker:18.04-dind
+
+matrix:
+  include:
+    - WORDPRESS_VERSION: 4.9.5
+      WORDPRESS_CHECKSUM: a1664b259755021adbfbe5e8f7fd78a98c015e92e1f985258abed19f759822cb
+      IMAGE_TAGS: 4.9.5 4.9
+
+    - WORDPRESS_VERSION: 4.8.6
+      WORDPRESS_CHECKSUM: f57852c7b2c107e56fe08eefb57de28f259e8a989b40c811dd22efbad2e30e2d
+      IMAGE_TAGS: 4.8.6 4.8
+
+    - WORDPRESS_VERSION: 4.7.10
+      WORDPRESS_CHECKSUM: 56163c5f220a9b85c0fa1813c140d9519b28ff7637129e21137c66e22283b985
+      IMAGE_TAGS: 4.7.10 4.7
+    - WORDPRESS_VERSION: 4.7.1
+      WORDPRESS_CHECKSUM: 171252eed21e31becb5d52fa3d3ef7ba2b41f0fedd1a412afc5ad937da5317f6
+      IMAGE_TAGS: 4.7.1

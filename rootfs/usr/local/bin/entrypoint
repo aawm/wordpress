@@ -1,76 +1,10 @@
 #!/usr/bin/env bash
-set -e
+set -eo pipefail
+[[ "${DEBUG}" == "true" ]] && set -x
 
-declare -x WORDPRESS_DOMAIN
-[[ -z "${WORDPRESS_DOMAIN}" ]] && WORDPRESS_DOMAIN="${HOSTNAME}"
-
-declare -x WORDPRESS_DEBUG
-[[ -z "${WORDPRESS_DEBUG}" ]] && WORDPRESS_DEBUG="false"
-
-declare -x WORDPRESS_DB_PREFIX
-[[ -z "${WORDPRESS_DB_PREFIX}" ]] && WORDPRESS_DB_PREFIX="wp_"
-
-declare -x WORDPRESS_DB_HOST
-[[ -z "${WORDPRESS_DB_HOST}" ]] && WORDPRESS_DB_HOST="mariadb"
-
-declare -x WORDPRESS_DB_NAME
-[[ -z "${WORDPRESS_DB_NAME}" ]] && WORDPRESS_DB_NAME="wordpress"
-
-declare -x WORDPRESS_DB_USERNAME
-[[ -z "${WORDPRESS_DB_USERNAME}" ]] && WORDPRESS_DB_USERNAME=""
-
-declare -x WORDPRESS_DB_PASSWORD
-[[ -z "${WORDPRESS_DB_PASSWORD}" ]] && WORDPRESS_DB_PASSWORD=""
-
-declare -x WORDPRESS_DB_TIMEOUT
-[[ -z "${WORDPRESS_DB_TIMEOUT}" ]] && WORDPRESS_DB_TIMEOUT="180"
-
-declare -x WORDPRESS_DB_FAIL
-[[ -z "${WORDPRESS_DB_FAIL}" ]] && WORDPRESS_DB_FAIL="true"
-
-declare -x WORDPRESS_MAIL_HOST
-[[ -z "${WORDPRESS_MAIL_HOST}" ]] && WORDPRESS_MAIL_HOST="mail.owncloud.com"
-
-declare -x WORDPRESS_MAIL_PORT
-[[ -z "${WORDPRESS_MAIL_PORT}" ]] && WORDPRESS_MAIL_PORT=""
-
-declare -x WORDPRESS_MAIL_USERNAME
-[[ -z "${WORDPRESS_MAIL_USERNAME}" ]] && WORDPRESS_MAIL_USERNAME=""
-
-declare -x WORDPRESS_MAIL_PASSWORD
-[[ -z "${WORDPRESS_MAIL_PASSWORD}" ]] && WORDPRESS_MAIL_PASSWORD=""
-
-declare -x WORDPRESS_MAIL_SECURITY
-[[ -z "${WORDPRESS_MAIL_SECURITY}" ]] && WORDPRESS_MAIL_SECURITY="ssl"
-
-declare -x WORDPRESS_MAIL_FROM
-[[ -z "${WORDPRESS_MAIL_FROM}" ]] && WORDPRESS_MAIL_FROM="norepy@owncloud.com"
-
-declare -x WORDPRESS_MAIL_NAME
-[[ -z "${WORDPRESS_MAIL_NAME}" ]] && WORDPRESS_MAIL_NAME="WordPress Admin"
-
-declare -x WORDPRESS_AUTH_KEY
-[[ -z "${WORDPRESS_AUTH_KEY}" ]] && WORDPRESS_AUTH_KEY=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_SECURE_AUTH_KEY
-[[ -z "${WORDPRESS_SECURE_AUTH_KEY}" ]] && WORDPRESS_SECURE_AUTH_KEY=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_LOGGED_IN_KEY
-[[ -z "${WORDPRESS_LOGGED_IN_KEY}" ]] && WORDPRESS_LOGGED_IN_KEY=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_NONCE_KEY
-[[ -z "${WORDPRESS_NONCE_KEY}" ]] && WORDPRESS_NONCE_KEY=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_AUTH_SALT
-[[ -z "${WORDPRESS_AUTH_SALT}" ]] && WORDPRESS_AUTH_SALT=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_SECURE_AUTH_SALT
-[[ -z "${WORDPRESS_SECURE_AUTH_SALT}" ]] && WORDPRESS_SECURE_AUTH_SALT=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_LOGGED_IN_SALT
-[[ -z "${WORDPRESS_LOGGED_IN_SALT}" ]] && WORDPRESS_LOGGED_IN_SALT=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
-
-declare -x WORDPRESS_NONCE_SALT
-[[ -z "${WORDPRESS_NONCE_SALT}" ]] && WORDPRESS_NONCE_SALT=$(head -c1M /dev/urandom | sha1sum | cut -d' ' -f1)
+for FILE in $(find /etc/entrypoint.d -iname *.sh | sort)
+do
+  source ${FILE}
+done
 
 exec $@
