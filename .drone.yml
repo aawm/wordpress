@@ -32,6 +32,21 @@ pipeline:
     commands:
       - docker build -t owncloud/wordpress:latest .
 
+  mariadb:
+    image: toolhippie/docker:latest
+    pull: true
+    detach: true
+    environment:
+      - DOCKER_HOST=tcp://docker:2375
+    commands:
+      - |
+        docker run --name mariadb \
+          --env MARIADB_ROOT_PASSWORD=wordpress \
+          --env MARIADB_USERNAME=wordpress \
+          --env MARIADB_PASSWORD=wordpress \
+          --env MARIADB_DATABASE=wordpress \
+          webhippie/mariadb:latest
+
   server:
     image: toolhippie/docker:latest
     pull: true
@@ -39,7 +54,13 @@ pipeline:
     environment:
       - DOCKER_HOST=tcp://docker:2375
     commands:
-      - docker run -e WORDPRESS_DB_WAITING=false -p 8000:80 owncloud/wordpress:latest
+      - |
+        docker run --name wordpress \
+          --link mariadb:mariadb \
+          --env WORDPRESS_DB_USERNAME=wordpress \
+          --env WORDPRESS_DB_PASSWORD=wordpress \
+          --publish 8000:80 \
+          owncloud/wordpress:latest
 
   test:
     image: owncloud/ubuntu:latest
